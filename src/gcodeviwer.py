@@ -43,5 +43,5 @@ if __name__ == "__main__":
     else:
         path = os.path.dirname(os.path.realpath(__file__))
     
-    app = GCodeViewerApp(None, path)
-    app.mainloop()
+    app = GCodeViewerApp(path)
+    app.MainLoop()
