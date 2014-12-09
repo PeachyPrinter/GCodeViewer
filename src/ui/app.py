@@ -1,8 +1,11 @@
 import wx
 from main import DisplayPanel
 
+import logging
+
 class GCodeViewerApp(wx.App):
     def __init__(self, path):
+        logging.info('Starting Application')
         self.frame = None
         wx.App.__init__(self, redirect=False)
     
