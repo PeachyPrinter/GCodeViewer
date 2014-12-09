@@ -11,8 +11,12 @@ class Viewer(object):
         self.current_complete_call_back = complete_call_back
         AsynchronousGcodeReader(afile,self._load_gcode_call_back,self._load_gcode_complete).start()
 
-    def get_layers(self,start,end,skip):
-        pass
+    def get_layers(self,start = None,end = None, skip = None):
+        if start < 0:
+            start = 0
+        if skip < 0:
+            skip = None
+        return self.layers[start:end:skip]
 
     def _load_gcode_call_back(self, layer):
         self.layers.append(layer)
