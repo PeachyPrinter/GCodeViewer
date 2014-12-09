@@ -10,6 +10,7 @@ class AsynchronousGcodeReader(threading.Thread):
         self.complete = complete
 
     def run(self):
-        print('here')
+        layers = GCodeReader(self.afile).get_layers()
+        for layer in layers:
+            self.call_back(layer)
         self.complete()
-        print('again')

@@ -18,17 +18,18 @@ class AsynchronousGcodeReaderTest(unittest.TestCase):
         mock_gcode_reader = mock_GcodeReader.return_value
         mock_gcode_reader.get_layers.return_value = iter([l1,l2])
         call_backs = []
-        complete = False
+        complete = [False]
         tries = 0
+
         def test_callback(layer):
             call_backs.append(layer)
+
         def test_complete():
-            print('woot')
-            complete = True
+            complete[0] = True
         
         AsynchronousGcodeReader('file',test_callback,test_complete).start()
 
-        while (complete == False and tries < 10):
+        while (not complete[0] and tries < 10):
             tries +=1
             time.sleep(0.1)
 
