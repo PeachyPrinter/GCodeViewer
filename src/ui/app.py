@@ -9,10 +9,13 @@ class GCodeViewerApp(wx.App):
     def setup_menu(self):
         menuBar = wx.MenuBar()
         menu = wx.Menu()
+        menu_open_item = menu.Append(-1, "&Open\tCtrl-O", "Open")
         menu_exit_item = menu.Append(wx.ID_EXIT, "E&xit\tCtrl-Q", "Exit")
-        self.Bind(wx.EVT_MENU, self.OnExitApp, menu_exit_item)
-        menu_open_item = menu.Append(wx.ID_EXIT, "&Open\tCtrl-O", "Open")
+
         self.Bind(wx.EVT_MENU, self.OnOpen, menu_open_item)
+        self.Bind(wx.EVT_MENU, self.OnExitApp, menu_exit_item)
+        
+
         menuBar.Append(menu, "&File")
         self.frame.SetMenuBar(menuBar)
 
@@ -29,13 +32,14 @@ class GCodeViewerApp(wx.App):
         
         self.frame.Show(True)
         self.frame.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
-
+        sizer = wx.BoxSizer(wx.VERTICAL)
         display_panel = DisplayPanel(self.frame)
-
+        sizer.Add(display_panel,0,wx.EXPAND|wx.ALL)
+        self.frame.SetSizer(sizer)
         self.frame.SetSize(wx.DisplaySize())
         display_panel.SetFocus()
         self.window = display_panel
-        # frect = self.frame.GetRect()
+        frect = self.frame.GetRect()
 
         self.SetTopWindow(self.frame)
         return True
