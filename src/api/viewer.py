@@ -3,15 +3,22 @@ from infrastructure.asynchronous_gcode_reader import AsynchronousGcodeReader
 class Viewer(object):
     def __init__(self):
         self.layers = []
+        self.current_layer_call_back = None
+        self.current_complete_call_back = None
 
-    def load_gcode(self, afile,layer_count_call_back = None):
-        AsynchronousGcodeReader(afile,self.load_gcode_call_back,self.load_gcode_complete).start()
+    def load_gcode(self, afile,layer_count_call_back = None, complete_call_back = None):
+        self.current_layer_call_back = layer_count_call_back
+        self.current_complete_call_back = complete_call_back
+        AsynchronousGcodeReader(afile,self._load_gcode_call_back,self._load_gcode_complete).start()
 
     def get_layers(self,start,end,skip):
         pass
 
-    def load_gcode_call_back(self, layer):
+    def _load_gcode_call_back(self, layer):
         self.layers.append(layer)
+        if self.current_layer_call_back:
+            self.current_layer_call_back(len(self.layers))
 
-    def load_gcode_complete(self):
-        pass
+    def _load_gcode_complete(self):
+        if self.current_complete_call_back:
+            self.current_complete_call_back(len(self.layers))

@@ -1,10 +1,8 @@
 import wx
-from api.viewer import Viewer
 from main import DisplayPanel
 
 class GCodeViewerApp(wx.App):
     def __init__(self, path):
-        self.api = Viewer()
         self.frame = None
         wx.App.__init__(self, redirect=False)
     
@@ -32,7 +30,7 @@ class GCodeViewerApp(wx.App):
         self.frame.Show(True)
         self.frame.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
 
-        display_panel = DisplayPanel(self.frame, self.api)
+        display_panel = DisplayPanel(self.frame)
 
         self.frame.SetSize(wx.DisplaySize())
         display_panel.SetFocus()
@@ -43,18 +41,16 @@ class GCodeViewerApp(wx.App):
         return True
 
     def OnOpen(self, event):
-        openFileDialog = wx.FileDialog(self.window, "Open XYZ file", "", "", "XYZ files (*.xyz)|*.xyz", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
+        openFileDialog = wx.FileDialog(self.window, "Open GCODE file", "", "", "gcocde files (*.gcode)|*.gcode", wx.FD_OPEN | wx.FD_FILE_MUST_EXIST)
 
         if openFileDialog.ShowModal() == wx.ID_CANCEL:
             return     # the user changed idea...
 
         # proceed loading the file chosen by the user
         # this can be done with e.g. wxPython input streams:
-        input_stream = wx.FileInputStream(openFileDialog.GetPath())
+        file_in_stream = open(openFileDialog.GetPath(),'r')
 
-        if not input_stream.IsOk():
-            wx.LogError("Cannot open file '%s'."%openFileDialog.GetPath())
-            return
+        self.window.load_file(file_in_stream)
 
     def OnExitApp(self, evt):
         self.frame.Close(True)
