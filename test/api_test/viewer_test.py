@@ -20,6 +20,16 @@ class ViewerTest(unittest.TestCase):
         self.assertEquals(test_file, mock_AsynchronousGcodeReader.call_args_list[0][0][0])
         mock_asynchronous_gcode_reader.start.assert_called_with()
 
+    def test_load_gcode_should_call_layer_count_call_back(self,mock_AsynchronousGcodeReader):
+        viewer = Viewer()
+        test_file = 'test_file.gcode'
+        mock_asynchronous_gcode_reader = mock_AsynchronousGcodeReader.return_value
+        
+        viewer.load_gcode(test_file)
+
+        self.assertEquals(test_file, mock_AsynchronousGcodeReader.call_args_list[0][0][0])
+        mock_asynchronous_gcode_reader.start.assert_called_with()
+
 
 if __name__ == '__main__':
     unittest.main()
