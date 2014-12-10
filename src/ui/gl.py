@@ -5,6 +5,7 @@ from OpenGL.GLUT import *
 import threading
 import time
 import logging
+from domain.commands import *
 
 class GCodeCanvas(glcanvas.GLCanvas):
 
@@ -13,11 +14,13 @@ class GCodeCanvas(glcanvas.GLCanvas):
         self.init = False
         self.context = glcanvas.GLContext(self)
         # initial mouse position
-        self.lastx = self.x = 30
-        self.lasty = self.y = 30
-        self.z = 0.0
+        self.lastx = self.x = 0
+        self.lasty = self.y = 0
         self.size = None
-        self.scale = 0.001
+        self.last_scale = 0.0
+        self.scale = 0.0
+        self.xrot = self.lastrotx = 0.0
+        self.yrot = self.lastroty = 0.0
 
         self.processor = processor
 
@@ -59,15 +62,21 @@ class GCodeCanvas(glcanvas.GLCanvas):
 
     def OnMouseWheel(self, evt):
         if evt.GetWheelRotation() > 0:
-            self.scale += 0.0001
+           self.scale += 0.01
         else:
-            self.scale -= 0.0001
+            self.scale -= 0.01
+        
+        logging.info("New Scale: %s" % self.scale)
         self.Refresh(False)
 
     def OnMouseMotion(self, evt):
         if evt.Dragging() and evt.LeftIsDown():
-            self.lastx, self.lasty = self.x, self.y
-            self.x, self.y = evt.GetPosition()
+            self.lastx,self.lasty = self.x,self.y
+            self.x = evt.GetPosition()[0] 
+            self.y = evt.GetPosition()[1]
+            logging.info('Diff X:Y:  %s:%s '% (self.x - self.lastx, self.y - self.lasty))
+            self.xrot += self.x - self.lastx
+            self.yrot += self.y - self.lasty
             self.Refresh(False)
 
     def InitGL(self):
@@ -92,9 +101,10 @@ class GCodeCanvas(glcanvas.GLCanvas):
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
         # draw six faces of a cube
-        # index = self.processor.get_index()
-        # if index:
-        #     glCallList(index)
+        self.processor.updatenow()
+        index = self.processor.get_index()
+        if index:
+            glCallList(index)
 
         if self.size is None:
             self.size = self.GetClientSize()
@@ -103,23 +113,34 @@ class GCodeCanvas(glcanvas.GLCanvas):
         h = max(h, 1.0)
         xScale = 180.0 / w
         yScale = 180.0 / h
-        # glRotatef((self.y - self.lasty) * yScale, 1.0, 0.0, 0.0);
-        glRotatef((self.x - self.lastx) * xScale, 0.0, 1.0, 0.0);
+        logging.info("X:Y: %s:%s" % (self.xrot,self.yrot))
 
-        # glTranslatef(0.0, 0.0, self.z)
-        self.z = 0.0
+        glRotatef(0.0 - (self.lastroty * yScale), 1.0, 0.0, 0.0);
+        glRotatef(0.0 - (self.lastrotx * xScale), 0.0, 1.0, 0.0);
+        glTranslatef(0.0,0.0,0.0 - self.last_scale)
+
+        glTranslatef(0.0, 0.0, 0.0 + self.scale)
+        glRotatef(self.xrot * xScale, 0.0, 1.0, 0.0);
+        glRotatef(self.yrot * yScale, 1.0, 0.0, 0.0);
+
+
+        
+        self.last_scale = self.scale
+        self.lastrotx, self.lastroty = self.xrot, self.yrot
+
 
         self.SwapBuffers()
 
 
-class GLProcesser(threading.Thread):
+class GLProcesser():
     def __init__(self):
-        threading.Thread.__init__(self)
-        self.currentDisplayList = None
+        self.currentDisplayList = glGenLists(1);
+        glNewList(self.currentDisplayList, GL_COMPILE)
+        glEndList()
         self.updateRequired = False
-        self.running = False
         self.layers = []
-        self.scale = 0.0001
+        self.movecolour = [1.0,0.0,0.0]
+        self.drawcolour = [0.0,1.0,0.0]
 
     def get_index(self):
         return self.currentDisplayList
@@ -129,42 +150,41 @@ class GLProcesser(threading.Thread):
         self.layers = layers
         self.updateRequired = True
 
-    def run(self):
-        self.running = True
-        while self.running:
-            if self.updateRequired:
-                logging.info("Required Update")
-                self._populate_layers()
-                self.updateRequired = False
-            else:
-                time.sleep(1)
+    def updatenow(self):
+        if self.updateRequired:
+            logging.info("Required Update")
+            self._populate_layers()
+            self.updateRequired = False
 
     def _populate_layers(self):
         logging.info("Started Adding Display List")
         self.nextDisplayList = glGenLists(1);
-        glNewList(self.nextDisplayList, GL_COMPILE);
+        glNewList(self.nextDisplayList, GL_COMPILE)
         glBegin(GL_QUADS)
-        for layer in layers:
+        layer_count = len(self.layers)
+        layer_height = (self.layers[layer_count -1].z - self.layers[0].z ) / layer_count
+        logging.info("Layer Height: %s" % layer_height)
+        self.base_scale = 1.0 / self.layers[layer_count -1].z
+        current_scale = self.base_scale
+        logging.info("Base Scale: %s" % self.base_scale)
+        for layer in self.layers:
             for command in layer.commands:
                 if type(command) == LateralDraw:
-                    glColor3fv(drawcolour)
+                    glColor3fv(self.drawcolour)
                 else:
-                    glColor3fv(movecolour)
-                glVertex3f(command.start[0] * self.scale,   layer.z * self.scale,                command.start[1] * self.scale)
-                glVertex3f(command.start[0] * self.scale,   layer.z * self.scale+self.scale*2.0, command.start[1] * self.scale)
-                glVertex3f(command.end[0]   * self.scale,   layer.z * self.scale+self.scale*2.0, command.end[1]   * self.scale)
-                glVertex3f(command.end[0]   * self.scale,   layer.z * self.scale,                command.end[1]   * self.scale)
+                    glColor3fv(self.movecolour)
+                glVertex3f(command.start[0] * current_scale,   layer.z * current_scale,                                    command.start[1] * current_scale)
+                glVertex3f(command.start[0] * current_scale,   layer.z * current_scale+layer_height*current_scale        , command.start[1] * current_scale)
+                glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale+layer_height*current_scale        , command.end[1]   * current_scale)
+                glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale,                                    command.end[1]   * current_scale)
 
         glEnd()
-        glEndList();
+        glEndList()
         old = self.currentDisplayList
         self.currentDisplayList = self.nextDisplayList
         glDeleteLists(old, 1)
         
         logging.info("Finished Adding Display List")
-
-    def close(self):
-        self.running = False
 
 
 

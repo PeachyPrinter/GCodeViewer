@@ -37,8 +37,9 @@ class GCodeViewerApp(wx.App):
         self.frame.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         sizer = wx.BoxSizer(wx.VERTICAL)
         display_panel = DisplayPanel(self.frame)
-        sizer.Add(display_panel,0,wx.EXPAND|wx.ALL)
+        sizer.Add(display_panel,1,wx.EXPAND|wx.ALL)
         self.frame.SetSizer(sizer)
+        logging.info("Display Size: %s,%s" % wx.DisplaySize())
         self.frame.SetSize(wx.DisplaySize())
         display_panel.SetFocus()
         self.window = display_panel

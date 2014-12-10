@@ -180,5 +180,8 @@ class ViewerTest(unittest.TestCase):
         self.assertEquals(layers[0], 'Layer: 50')
         self.assertEquals(layers[9], 'Layer: 59')
 
+    def test_loading_a_new_file_removes_old_ones_layers(self):
+        pass
+
 if __name__ == '__main__':
     unittest.main()

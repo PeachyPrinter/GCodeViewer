@@ -23,30 +23,38 @@ class DisplayPanel(wx.Panel):
         layers_to_display_slider_text = wx.StaticText(self, label="Number of Layers") 
         layer_parse_text = wx.StaticText(self, label="Layers to Hide") 
 
-        layer_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
-        layers_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
-        skip_slider = wx.Slider(self, value = 50, minValue = 1, maxValue = 50)
+        self.layer_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
+        self.layers_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
+        self.skip_slider = wx.Slider(self, value = 50, minValue = 1, maxValue = 50)
 
         control_sizer.Add(layer_slider_text)
-        control_sizer.Add(layer_slider,1,wx.EXPAND)
+        control_sizer.Add(self.layer_slider,1,wx.EXPAND)
 
         control_sizer.Add(layers_to_display_slider_text)
-        control_sizer.Add(layers_slider,1,wx.EXPAND)
+        control_sizer.Add(self.layers_slider,1,wx.EXPAND)
 
         control_sizer.Add(layer_parse_text)
-        control_sizer.Add(skip_slider,1,wx.EXPAND)
+        control_sizer.Add(self.skip_slider,1,wx.EXPAND)
 
         control_sizer.AddGrowableCol(1, 1)
 
         sizer_display_control.Add(control_sizer,0,wx.EXPAND,5)
         self.processor = GLProcesser()
-        self.processor.start()
         self.canvas = GCodeCanvas(self,self.processor)
         sizer_display_control.Add(self.canvas,1,wx.ALL|wx.EXPAND, 5)
 
         self.SetAutoLayout(True)
         self.SetSizer(sizer_display_control)
         self.SetFocus()
+
+        self.Bind(wx.EVT_SLIDER, self.change_layer)
+
+    def change_layer(self,event):
+            bottom = self.layer_slider.GetValue() - self.layers_slider.GetValue() / 2
+            top = self.layer_slider.GetValue() + self.layers_slider.GetValue() / 2
+            skip = self.skip_slider.GetValue()
+            logging.debug("Data Type: %s" % type(bottom) )
+            self.processor.update(self.api.get_layers(bottom,top,skip))
 
     def load_file(self, afile):
         self.status = "Loading"
@@ -67,8 +75,12 @@ class DisplayPanel(wx.Panel):
         logging.info('Updating display')
         self.parent.SetStatusText("%s : %s Layers" % (self.status,message.data))
         logging.info('Getting Layers')
-        self.processor.update(self.api.get_layers())
+        self.layer_slider.SetMax(message.data)
+        self.layers_slider.SetMax(message.data)
+        self.layer_slider.SetValue(message.data / 2)
+        self.layers_slider.SetValue(message.data)
+        self.change_layer(None)
         logging.info('Got Layers')
 
     def shutdown(self):
-        self.processor.close()
+        pass
