@@ -115,16 +115,24 @@ class GCodeCanvas(glcanvas.GLCanvas):
         yScale = 180.0 / h
         logging.debug("X:Y: %s:%s" % (self.xrot,self.yrot))
 
+        # Vertical Rotation Revert
         glTranslatef(0.0,0.5,0.0)
         glRotatef(0.0 - (self.lastroty * yScale), 1.0, 0.0, 0.0);
         glTranslatef(0.0,-0.5,0.0)
 
+        # Horizontal Rotation Revert
         glRotatef(0.0 - (self.lastrotx * xScale), 0.0, 1.0, 0.0);
+
+        # Scale Revert (Z pos)
         glTranslatef(0.0,0.0,0.0 - self.last_scale)
 
+        # Scale
         glTranslatef(0.0, 0.0, 0.0 + self.scale)
+
+        # Horizontal Rotation
         glRotatef(self.xrot * xScale, 0.0, 1.0, 0.0);
 
+        # Vertical Rotation
         glTranslatef(0.0,0.5,0.0)
         glRotatef(self.yrot * yScale, 1.0, 0.0, 0.0);
         glTranslatef(0.0,-0.5,0.0)
