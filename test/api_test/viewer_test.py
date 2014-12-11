@@ -180,8 +180,29 @@ class ViewerTest(unittest.TestCase):
         self.assertEquals(layers[0], 'Layer: 50')
         self.assertEquals(layers[9], 'Layer: 59')
 
-    def test_loading_a_new_file_removes_old_ones_layers(self):
-        pass
+    def test_loading_a_new_file_removes_old_ones_layers(self, mock_AsynchronousGcodeReader):
+        viewer = Viewer()
+        test_file1 = 'test_file1.gcode'
+        test_file2 = 'test_file2.gcode'
+        mock_asynchronous_gcode_reader = mock_AsynchronousGcodeReader.return_value
+        viewer.load_gcode(test_file1)
+        viewer_call_back = mock_AsynchronousGcodeReader.call_args_list[0][0][1]
+        for i in range(0,100):
+            viewer_call_back('Old Layer: %s' % i)
+        complete_call_back = mock_AsynchronousGcodeReader.call_args_list[0][0][2]
+        complete_call_back()
+
+        viewer.load_gcode(test_file2)
+        viewer_call_back = mock_AsynchronousGcodeReader.call_args_list[0][0][1]
+        for i in range(0,100):
+            viewer_call_back('New Layer: %s' % i)
+        complete_call_back = mock_AsynchronousGcodeReader.call_args_list[0][0][2]
+        complete_call_back()
+
+        layers = viewer.get_layers()
+
+        self.assertEquals(100,len(layers))
+        self.assertEquals(layers[0], 'New Layer: 0')
 
 if __name__ == '__main__':
     unittest.main()

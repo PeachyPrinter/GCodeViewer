@@ -7,6 +7,7 @@ class Viewer(object):
         self.current_complete_call_back = None
 
     def load_gcode(self, afile,layer_count_call_back = None, complete_call_back = None):
+        del(self.layers[:])
         self.current_layer_call_back = layer_count_call_back
         self.current_complete_call_back = complete_call_back
         AsynchronousGcodeReader(afile,self._load_gcode_call_back,self._load_gcode_complete).start()
