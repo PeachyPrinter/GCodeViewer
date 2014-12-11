@@ -9,7 +9,7 @@ class DisplayPanel(wx.Panel):
         self.parent = parent
         wx.Panel.__init__(self, self.parent, -1, style=wx.RAISED_BORDER)
         
-        
+        logging.debug("Starting api")
         self.api = Viewer()
         self.status = ""
         self.UpdateEvent, EVT_UPDATE = wx.lib.newevent.NewEvent()
@@ -39,7 +39,9 @@ class DisplayPanel(wx.Panel):
         control_sizer.AddGrowableCol(1, 1)
 
         sizer_display_control.Add(control_sizer,0,wx.EXPAND,5)
+        logging.debug("Starting processor")
         self.processor = GLProcesser()
+        logging.debug("Starting canvas")
         self.canvas = GCodeCanvas(self,self.processor)
         sizer_display_control.Add(self.canvas,1,wx.ALL|wx.EXPAND, 5)
 

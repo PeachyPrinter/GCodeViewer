@@ -74,7 +74,7 @@ class GCodeCanvas(glcanvas.GLCanvas):
             self.lastx,self.lasty = self.x,self.y
             self.x = evt.GetPosition()[0] 
             self.y = evt.GetPosition()[1]
-            logging.info('Diff X:Y:  %s:%s '% (self.x - self.lastx, self.y - self.lasty))
+            logging.debug('Diff X:Y:  %s:%s '% (self.x - self.lastx, self.y - self.lasty))
             self.xrot += self.x - self.lastx
             self.yrot += self.y - self.lasty
             self.Refresh(False)
@@ -113,7 +113,7 @@ class GCodeCanvas(glcanvas.GLCanvas):
         h = max(h, 1.0)
         xScale = 180.0 / w
         yScale = 180.0 / h
-        logging.info("X:Y: %s:%s" % (self.xrot,self.yrot))
+        logging.debug("X:Y: %s:%s" % (self.xrot,self.yrot))
 
         glRotatef(0.0 - (self.lastroty * yScale), 1.0, 0.0, 0.0);
         glRotatef(0.0 - (self.lastrotx * xScale), 0.0, 1.0, 0.0);
@@ -134,15 +134,20 @@ class GCodeCanvas(glcanvas.GLCanvas):
 
 class GLProcesser():
     def __init__(self):
-        self.currentDisplayList = glGenLists(1);
-        glNewList(self.currentDisplayList, GL_COMPILE)
-        glEndList()
+        self.currentDisplayList = None
         self.updateRequired = False
         self.layers = []
         self.movecolour = [1.0,0.0,0.0]
         self.drawcolour = [0.0,1.0,0.0]
 
     def get_index(self):
+        if not self.currentDisplayList:
+            logging.debug("Starting display id")
+            self.currentDisplayList = glGenLists(1);
+            logging.debug("Starting display list")
+            glNewList(self.currentDisplayList, GL_COMPILE)
+            glEndList()
+            logging.debug("Done display list")
         return self.currentDisplayList
 
     def update(self, layers):
@@ -160,7 +165,7 @@ class GLProcesser():
         logging.info("Started Adding Display List")
         self.nextDisplayList = glGenLists(1);
         glNewList(self.nextDisplayList, GL_COMPILE)
-        glBegin(GL_QUADS)
+        glBegin(GL_LINES)
         layer_count = len(self.layers)
         layer_height = (self.layers[layer_count -1].z - self.layers[0].z ) / layer_count
         logging.info("Layer Height: %s" % layer_height)
@@ -174,8 +179,8 @@ class GLProcesser():
                 else:
                     glColor3fv(self.movecolour)
                 glVertex3f(command.start[0] * current_scale,   layer.z * current_scale,                                    command.start[1] * current_scale)
-                glVertex3f(command.start[0] * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.start[1] * current_scale)
-                glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.end[1]   * current_scale)
+                # glVertex3f(command.start[0] * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.start[1] * current_scale)
+                # glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.end[1]   * current_scale)
                 glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale,                                    command.end[1]   * current_scale)
 
         glEnd()

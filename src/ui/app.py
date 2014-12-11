@@ -8,6 +8,7 @@ class GCodeViewerApp(wx.App):
         logging.info('Starting Application')
         self.frame = None
         wx.App.__init__(self, redirect=False)
+        logging.info("Started Application")
     
     def setup_menu(self):
         menuBar = wx.MenuBar()
@@ -23,6 +24,7 @@ class GCodeViewerApp(wx.App):
         self.frame.SetMenuBar(menuBar)
 
     def OnInit(self):
+        logging.debug("Initting")
         self.frame = wx.Frame(None, 
             id = -1, 
             title = "Peachy GCode Viewer", 
@@ -36,7 +38,9 @@ class GCodeViewerApp(wx.App):
         self.frame.Show(True)
         self.frame.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         sizer = wx.BoxSizer(wx.VERTICAL)
+        logging.debug("Starting display panel")
         display_panel = DisplayPanel(self.frame)
+        logging.debug("Display panel started")
         sizer.Add(display_panel,1,wx.EXPAND|wx.ALL)
         self.frame.SetSizer(sizer)
         logging.info("Display Size: %s,%s" % wx.DisplaySize())
