@@ -186,7 +186,6 @@ class GCodeCommandReader(object):
         else:
             return value
 
-
     def _update_layer_height(self, current_height, new_height):
         if current_height:
             this_layer_height = new_height - current_height
