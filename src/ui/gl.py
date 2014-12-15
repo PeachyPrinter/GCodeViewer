@@ -31,7 +31,7 @@ class GCodeCanvas(glcanvas.GLCanvas):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-        self.DoSetViewport()
+        
 
     def OnEraseBackground(self, event):
         pass # Do nothing, to avoid flashing on MSW.
@@ -95,6 +95,7 @@ class GCodeCanvas(glcanvas.GLCanvas):
         glEnable(GL_DEPTH_TEST)
         # glEnable(GL_LIGHTING)
         # glEnable(GL_LIGHT0)
+        self.DoSetViewport()
 
     def OnDraw(self):
         # clear color and depth buffers
