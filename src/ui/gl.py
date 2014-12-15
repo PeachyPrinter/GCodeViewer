@@ -154,6 +154,8 @@ class GLProcesser():
         self.layers = []
         self.movecolour = [1.0,0.0,0.0]
         self.drawcolour = [0.0,1.0,0.0]
+        self.firstmovecolour = [1.0,1.0,0.0]
+        self.firstdrawcolour = [0.0,0.0,1.0]
 
     def get_index(self):
         if not self.currentDisplayList:
@@ -188,15 +190,27 @@ class GLProcesser():
         current_scale = self.base_scale
         logging.info("Base Scale: %s" % self.base_scale)
         for layer in self.layers:
+            first_draw = True
+            first_move = True
             for command in layer.commands:
                 if type(command) == LateralDraw:
-                    glColor3fv(self.drawcolour)
+                    if first_draw:
+                        first_draw = False
+                        glColor3fv(self.firstdrawcolour)
+                    else:
+                        glColor3fv(self.drawcolour)
                 else:
-                    glColor3fv(self.movecolour)
+                    if first_move:
+                        first_move = False
+                        glColor3fv(self.firstmovecolour)
+                    else:
+                        glColor3fv(self.movecolour)
+                    
                 glVertex3f(command.start[0] * current_scale,   layer.z * current_scale,                                    command.start[1] * current_scale)
                 # glVertex3f(command.start[0] * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.start[1] * current_scale)
                 # glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.end[1]   * current_scale)
                 glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale,                                    command.end[1]   * current_scale)
+
 
         glEnd()
         glEndList()
@@ -205,6 +219,7 @@ class GLProcesser():
         glDeleteLists(old, 1)
         
         logging.info("Finished Adding Display List")
+
 
 
 
