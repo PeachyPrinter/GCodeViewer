@@ -1,6 +1,6 @@
-import threading 
-
+import threading
 from gcode_layer_generator import GCodeReader
+
 
 class AsynchronousGcodeReader(threading.Thread):
     def __init__(self, afile, call_back, complete):

@@ -154,7 +154,7 @@ class GLProcesser():
         self.layers = []
         self.movecolour = [1.0,0.0,0.0]
         self.drawcolour = [0.0,1.0,0.0]
-        self.firstmovecolour = [1.0,1.0,0.0]
+        self.firstmovecolour = [1.0,0.0,1.0]
         self.firstdrawcolour = [0.0,0.0,1.0]
 
     def get_index(self):

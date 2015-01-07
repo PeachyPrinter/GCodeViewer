@@ -25,7 +25,7 @@ class DisplayPanel(wx.Panel):
 
         self.layer_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
         self.layers_slider = wx.Slider(self, value = 1, minValue = 1, maxValue = 2)
-        self.skip_slider = wx.Slider(self, value = 50, minValue = 1, maxValue = 50)
+        self.skip_slider = wx.Slider(self, value = 50, minValue = 1, maxValue = 200)
 
         control_sizer.Add(layer_slider_text)
         control_sizer.Add(self.layer_slider,1,wx.EXPAND)
