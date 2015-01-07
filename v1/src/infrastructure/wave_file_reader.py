@@ -36,7 +36,7 @@ class Wav2PGObject(object):
         else:
             left = np.array (out)
             right = left
-        return left,right
+        return left, right
 
     def wave_to_points(self,x,y):
         sample_since_last = 0
