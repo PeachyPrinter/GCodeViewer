@@ -10,10 +10,11 @@ from domain.point import Point
 class WavFolderPointSource(PointSource):
     def __init__(self, path):
         self._validate_path(path)
-        self._load_wav_files(path)
+        self._wave_files = self._load_wav_files(path)
+        self._height_scale = self._get_z_scale(self._wave_files)
 
     def get_points(self):
-        for fle in self.wave_files:
+        for fle in self._wave_files:
             for point in self._get_points_from_file(fle):
                 yield point
 
@@ -24,7 +25,7 @@ class WavFolderPointSource(PointSource):
 
     def _get_points_from_file(self, wave_file):
         wav = wave.open(wave_file, 'r')
-        z = self._file_height(wave_file)
+        z = self._file_height(wave_file) * self._height_scale
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wav.getparams()
         max_value = pow(2, (8 * sampwidth) - 1)
         min_value = max_value / 4
@@ -91,6 +92,10 @@ class WavFolderPointSource(PointSource):
 
     def _load_wav_files(self, path):
         files = [fle for fle in os.listdir(path) if fle[-4:] == '.wav']
-        self.wave_files = sorted(files, key=self._file_height)
-        if not self.wave_files:
+        if not files:
             raise Exception('Directory Specified contains no wave files')
+        return sorted(files, key=self._file_height)
+
+    def _get_z_scale(self, files):
+        return 1.0 / float(files[-1].split('_')[1])
+        
