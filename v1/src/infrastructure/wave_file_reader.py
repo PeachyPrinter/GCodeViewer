@@ -18,7 +18,7 @@ class Wav2PGObject(object):
         try:
             wav = wave.open(afile, 'r')
             x,y = self.wavLoad(wav)
-            points = self.wave_to_points(x,y)
+            points = self.wave_to_points(x, y)
             # print points
         finally:
             if wav:
@@ -34,7 +34,7 @@ class Wav2PGObject(object):
             left = np.array(out[0::2])
             right = np.array(out[1::2])
         else:
-            left = np.array (out)
+            left = np.arrayf(out)
             right = left
         return left, right
 
