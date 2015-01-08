@@ -35,4 +35,4 @@ class Point(object):
                 self._about(self._state, other._state))
 
     def __repr__(self):
-        return "(%s, %s, %s) %s" % (self._x, self._y, self._z, self._state)
+        return "(%s, %s, %s) Laser: %s" % (self._x, self._y, self._z, self._state)

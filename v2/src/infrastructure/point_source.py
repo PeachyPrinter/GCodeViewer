@@ -31,12 +31,12 @@ class WavFolderPointSource(PointSource):
         if nchannels != 2:
             raise Exception("Wave must be stereo")
         left, right = self._get_wave_data(nframes, wav.getnframes(nframes))
-        for x, y in self._peaks(left, right):
+        for x, y, state in self._peaks(left, right):
             yield Point(
                 self.mod_range(float(x), min_value, max_value),
                 self.mod_range(float(y), min_value, max_value),
                 z,
-                True)
+                state)
 
     def _get_wave_data(self, nframes, frames):
         out = struct.unpack_from("%dh" % nframes * 2, frames)
@@ -44,8 +44,43 @@ class WavFolderPointSource(PointSource):
         right = np.array(out[1::2])
         return left, right
 
+    def _is_peak(self, array, index):
+        return array[index] > array[index - 1] and array[index] > array[index + 1]
+
+    def _diffrences(self, indexes):
+        diffs = [indexes[i] - indexes[i-1] for i in range(1, len(indexes)-1)]
+        values = list(set(diffs))
+        return values
+
+    def _get_hi_modulation_samples(self, data):
+        index = 0
+        gaps = []
+
+        for index in range(1, len(data) - 1):
+            if self._is_peak(data, index):
+                if gaps:
+                    gaps.append(index)
+                    diffs = self._diffrences(gaps)
+                    if len(diffs) == 2:
+                        return min(diffs)
+                else:
+                    gaps = [index]
+            index += 1
+        return None
+
     def _peaks(self, left, right):
-        return [(left[i], right[i]) for i in range(1, len(left) - 1) if left[i] > left[i - 1] and left[i] > left[i + 1]]
+        peaks = []
+        min_gap = self._get_hi_modulation_samples(left)
+        last_peak_index = 0
+
+        for index in range(1, len(left) - 1):
+            if self._is_peak(left, index):
+                if min_gap and index - last_peak_index > min_gap:
+                    peaks.append((left[index], right[index], False))
+                else:
+                    peaks.append((left[index], right[index], True))
+                last_peak_index = index
+        return peaks
 
     def _validate_path(self, path):
         if not os.path.exists(path):
