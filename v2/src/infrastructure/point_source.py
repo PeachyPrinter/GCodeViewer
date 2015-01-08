@@ -13,7 +13,7 @@ class WavFolderPointSource(PointSource):
         self._load_wav_files(path)
 
     def get_points(self):
-        for fle in self.wav_files:
+        for fle in self.wave_files:
             for point in self._get_points_from_file(fle):
                 yield point
 
@@ -24,7 +24,7 @@ class WavFolderPointSource(PointSource):
 
     def _get_points_from_file(self, wave_file):
         wav = wave.open(wave_file, 'r')
-        z = float(wave_file.split('_')[1])
+        z = self._file_height(wave_file)
         (nchannels, sampwidth, framerate, nframes, comptype, compname) = wav.getparams()
         max_value = pow(2, (8 * sampwidth) - 1)
         min_value = max_value / 4
@@ -51,7 +51,11 @@ class WavFolderPointSource(PointSource):
         if not os.path.exists(path):
             raise Exception('Folder specified doesn\'t exist')
 
+    def _file_height(self, file_name):
+        return float(file_name.split('_')[1])
+
     def _load_wav_files(self, path):
-        self.wav_files = [fle for fle in os.listdir(path) if fle[-4:] == '.wav']
-        if not self.wav_files:
+        files = [fle for fle in os.listdir(path) if fle[-4:] == '.wav']
+        self.wave_files = sorted(files, key=self._file_height)
+        if not self.wave_files:
             raise Exception('Directory Specified contains no wave files')
