@@ -43,7 +43,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         with self.assertRaises(Exception):
             points = wfps.get_points()
             points.next()
-        mock_wave.open.assert_called_with('layer_69.88_.wav', 'r')
+        mock_wave.open.assert_called_with(os.path.join(self.test_folder,'layer_69.88_.wav'), 'r')
 
     @patch('infrastructure.point_source.wave.open')
     @patch.object(os, 'listdir')
@@ -55,7 +55,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 
@@ -74,7 +74,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0, -32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 
@@ -94,7 +94,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0, -32768, 0, 8192, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 1.0, True)
         expected_point2 = Point(-1.0, -1.0, 1.0, True)
@@ -115,7 +115,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 0.5, True)
         expected_point2 = Point(1.0, 1.0, 1.0, True)
@@ -136,7 +136,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 0.25, True)
         expected_point2 = Point(1.0, 1.0, 0.5, True)
@@ -164,7 +164,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
                     )
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point_on = Point(1.0, 1.0, 1.0, True)
         expected_point_off = Point(1.0, 1.0, 1.0, False)
@@ -187,7 +187,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
+        mock_wave.readframes.return_value = wave_data
         wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 

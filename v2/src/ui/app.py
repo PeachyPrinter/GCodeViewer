@@ -49,7 +49,11 @@ class ViewerApp(wx.App):
         return True
 
     def OnOpen(self, event):
-        pass
+        openFolderDialog = wx.DirDialog(self.window, "Open Wave folder", style=wx.DD_DEFAULT_STYLE | wx.DD_NEW_DIR_BUTTON)
+
+        if openFolderDialog.ShowModal() == wx.ID_CANCEL:
+            return
+        self.window.load_folder(openFolderDialog.GetPath())
 
     def OnExitApp(self, evt):
         self.frame.Close(True)

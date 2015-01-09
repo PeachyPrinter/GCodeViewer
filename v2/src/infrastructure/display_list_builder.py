@@ -10,7 +10,11 @@ class DisplayListBuilder(object):
         gl.glNewList(display_list_id, gl.GL_COMPILE)
         gl.glBegin(gl.GL_LINES)
         gl.glVertex3f(*last_point.xzy)
+        point_cnt = 0
         for point in points:
+            point_cnt += 1
+            if point_cnt % 1000 == 0:
+                print("Loading: %s" % point_cnt)
             gl.glVertex3f(*point.xzy)
         gl.glEnd()
         gl.glEndList()
