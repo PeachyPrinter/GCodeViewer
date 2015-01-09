@@ -16,5 +16,5 @@ class DisplayListBuilder(object):
         gl.glEndList()
         return display_list_id
 
-    def clearList(self, id):
-        pass
+    def clear_list(self, id):
+        gl.glDeleteLists(id, 1)

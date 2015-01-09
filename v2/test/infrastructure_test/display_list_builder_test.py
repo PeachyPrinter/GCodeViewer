@@ -39,6 +39,18 @@ class DisplayListBuilderTest(unittest.TestCase):
         mock_gl.glVertex3f.assert_has_calls([call(0.0, 0.0, 0.0), call(x, z, y)])
         mock_gl.glEnd.assert_called_with()
 
+    def test_clear_list_clears_gl_list(self, mock_gl):
+        expected_list_id = gl.GLuint(1)
+
+        mock_gl.glGenLists.return_value = expected_list_id
+        mock_gl.GL_COMPILE = gl.GL_COMPILE
+
+        dlb = DisplayListBuilder()
+        list_id = dlb.get_list_id([])
+        dlb.clear_list(list_id)
+
+        mock_gl.glDeleteLists.assert_called_with(list_id, 1)
+
 
 if __name__ == '__main__':
     unittest.main()
