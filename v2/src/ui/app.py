@@ -1,5 +1,6 @@
 import wx
 import logging
+from main import DisplayPanel
 
 
 class ViewerApp(wx.App):
@@ -36,14 +37,14 @@ class ViewerApp(wx.App):
         self.frame.Bind(wx.EVT_CLOSE, self.OnCloseFrame)
         sizer = wx.BoxSizer(wx.VERTICAL)
         logging.debug("Starting display panel")
-        # display_panel = DisplayPanel(self.frame)
-        # logging.debug("Display panel started")
-        # sizer.Add(display_panel, 1, wx.EXPAND | wx.ALL)
+        display_panel = DisplayPanel(self.frame)
+        logging.debug("Display panel started")
+        sizer.Add(display_panel, 1, wx.EXPAND | wx.ALL)
         self.frame.SetSizer(sizer)
         logging.info("Display Size: %s,%s" % wx.DisplaySize())
         self.frame.SetSize(wx.DisplaySize())
-        # display_panel.SetFocus()
-        # self.window = display_panel
+        display_panel.SetFocus()
+        self.window = display_panel
         self.SetTopWindow(self.frame)
         return True
 
