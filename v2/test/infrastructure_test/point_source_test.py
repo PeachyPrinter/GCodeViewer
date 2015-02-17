@@ -13,7 +13,9 @@ from domain.point import Point
 
 class WavFolderPointSourceTest(unittest.TestCase):
     def setUp(self):
-        pass
+        encoding = sys.getfilesystemencoding()
+        workingdir = os.path.dirname(unicode(__file__, encoding))
+        self.test_folder = os.path.join(workingdir, 'test_data')
 
     def default_params(self, nchannels=2, sampwidth=2, framerate=48000, nframes=4, comptype=None, compname=None):
         return (nchannels, sampwidth, framerate, nframes, comptype, compname)
@@ -26,7 +28,7 @@ class WavFolderPointSourceTest(unittest.TestCase):
             WavFolderPointSource('ERRR')
 
     def test_init_returns_if_valid_folder(self):
-        WavFolderPointSource('test_data')
+        WavFolderPointSource(self.test_folder)
 
     def test_init_raises_exception_if_valid_folder_but_no_wav_files(self):
         with self.assertRaises(Exception):
@@ -34,14 +36,14 @@ class WavFolderPointSourceTest(unittest.TestCase):
 
     @patch('infrastructure.point_source.wave')
     def test_get_points_raises_exception_given_non_stereo_wav_file(self, mock_wave):
-        wave_file=MagicMock()
+        wave_file = MagicMock()
         mock_wave.open.return_value = wave_file
         wave_file.getparams.return_value(self.default_params(nchannels=1))
-        wfps = WavFolderPointSource('test_data')
+        wfps = WavFolderPointSource(self.test_folder)
         with self.assertRaises(Exception):
             points = wfps.get_points()
             points.next()
-        mock_wave.open.assert_called_with('layer_69.88_.wav', 'r')
+        mock_wave.open.assert_called_with(os.path.join(self.test_folder,'layer_69.88_.wav'), 'r')
 
     @patch('infrastructure.point_source.wave.open')
     @patch.object(os, 'listdir')
@@ -53,8 +55,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 
         points = list(wfps.get_points())
@@ -72,8 +74,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0, -32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 
         points = list(wfps.get_points())
@@ -92,8 +94,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0, -32768, 0, 8192, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 1.0, True)
         expected_point2 = Point(-1.0, -1.0, 1.0, True)
 
@@ -113,8 +115,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 0.5, True)
         expected_point2 = Point(1.0, 1.0, 1.0, True)
 
@@ -134,8 +136,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point1 = Point(1.0, 1.0, 0.25, True)
         expected_point2 = Point(1.0, 1.0, 0.5, True)
         expected_point3 = Point(1.0, 1.0, 1.0, True)
@@ -155,14 +157,15 @@ class WavFolderPointSourceTest(unittest.TestCase):
         mock_open.return_value = mock_wave
         mock_wave.getparams.return_value = self.default_params(nframes=24)
         l = np.array(
-            (-32768, 0, 32767, 0, -32768, 0, 32767, 0,
-             -32768, -16384, 0, 16384, 32767, 16384, 0, -16384,
-             -32768, -16384, 0, 16384, 32767, 16384, 0, -16384,
-            ))
+                     (-32768, 0, 32767, 0, -32768, 0, 32767, 0,
+                      -32768, -16384, 0, 16384, 32767, 16384, 0, -16384,
+                      32768, -16384, 0, 16384, 32767, 16384, 0, -16384,
+                     )
+                    )
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point_on = Point(1.0, 1.0, 1.0, True)
         expected_point_off = Point(1.0, 1.0, 1.0, False)
 
@@ -184,8 +187,8 @@ class WavFolderPointSourceTest(unittest.TestCase):
         l = np.array((-32768, 0, 32767, 0))
         data = np.column_stack((l, l))
         wave_data = data.astype(np.dtype('<i2')).tostring()
-        mock_wave.getnframes.return_value = wave_data
-        wfps = WavFolderPointSource('test_data')
+        mock_wave.readframes.return_value = wave_data
+        wfps = WavFolderPointSource(self.test_folder)
         expected_point = Point(1.0, 1.0, 1.0, True)
 
         points = list(wfps.get_points())

@@ -19,6 +19,7 @@ class Canvas(glcanvas.GLCanvas):
         self.scale = 0.0
         self.xrot = self.lastrotx = 0.0
         self.yrot = self.lastroty = 0.0
+        self.display_list_id = None
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -89,7 +90,14 @@ class Canvas(glcanvas.GLCanvas):
 
         glEnable(GL_DEPTH_TEST)
         # glEnable(GL_LIGHTING)
+
         glutInit()
+
+        self.display_list_id = glGenLists(1)
+        glNewList(self.display_list_id, GL_COMPILE)
+        glutWireCube(1.0)
+        glEndList()
+
         # glEnable(GL_LIGHT0)
         self.DoSetViewport()
 
@@ -100,8 +108,8 @@ class Canvas(glcanvas.GLCanvas):
         # self.processor.updatenow()
         # index = self.processor.get_index()
         # if index:
-        #     glCallList(index)
-        glutWireCube(1.0)
+        if self.display_list_id:
+            glCallList(self.display_list_id)
 
         if self.size is None:
             self.size = self.GetClientSize()

@@ -18,8 +18,8 @@ class Point(object):
         return self._z
 
     @property
-    def xyz(self):
-        return (self._x, self._y, self._z)
+    def xzy(self):
+        return (self._x, self._z, self._y)
 
     @property
     def state(self):

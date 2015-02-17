@@ -31,7 +31,7 @@ class WavFolderPointSource(PointSource):
         min_value = max_value / 4
         if nchannels != 2:
             raise Exception("Wave must be stereo")
-        left, right = self._get_wave_data(nframes, wav.getnframes(nframes))
+        left, right = self._get_wave_data(nframes, wav.readframes(nframes))
         for x, y, state in self._peaks(left, right):
             yield Point(
                 self.mod_range(float(x), min_value, max_value),
@@ -88,14 +88,16 @@ class WavFolderPointSource(PointSource):
             raise Exception('Folder specified doesn\'t exist')
 
     def _file_height(self, file_name):
-        return float(file_name.split('_')[1])
+        file_only = os.path.split(file_name)[-1]
+        return float(file_only.split('_')[1])
 
     def _load_wav_files(self, path):
-        files = [fle for fle in os.listdir(path) if fle[-4:] == '.wav']
+        files = [os.path.join(path, fle) for fle in os.listdir(path) if fle[-4:] == '.wav']
         if not files:
             raise Exception('Directory Specified contains no wave files')
         return sorted(files, key=self._file_height)
 
     def _get_z_scale(self, files):
-        return 1.0 / float(files[-1].split('_')[1])
+        height = self._file_height(files[-1])
+        return 1.0 / float(height)
         
