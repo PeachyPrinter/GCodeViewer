@@ -4,8 +4,8 @@ import OpenGL.GL as gl
 
 class ShaderLoader(object):
 
-    @staticmethod
-    def load_vertex_shader(self, file_path):
+    @classmethod
+    def load_vertex_shader(cls, file_path):
         shader_id = gl.glCreateShader(gl.GL_VERTEX_SHADER)
         with open(file_path, 'r') as file_handle:
             code = file_handle.read()
@@ -19,12 +19,12 @@ class ShaderLoader(object):
         logging.info("Result: %s" % result)
         logging.info("Info: %s" % info)
         if info:
-            exit()
+            raise Exception(info)
 
         return shader_id
 
-    @staticmethod
-    def load_fragment_shader(self, file_path):
+    @classmethod
+    def load_fragment_shader(cls, file_path):
         shader_id = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
         with open(file_path, 'r') as file_handle:
             code = file_handle.read()
@@ -38,16 +38,16 @@ class ShaderLoader(object):
         logging.info("Result: %s" % result)
         logging.info("Info: %s" % info)
         if info:
-            exit()
+            raise Exception(info)
 
         return shader_id
 
-    @staticmethod
-    def load_shaders(self, vertex_shader_file, fragment_shader_file):
+    @classmethod
+    def load_shaders(cls, vertex_shader_file, fragment_shader_file):
         shader_program = gl.glCreateProgram()
 
-        vertex_shader_id = self.load_vertex_shader(vertex_shader_file)
-        fragment_shader_id = self.load_fragment_shader(fragment_shader_file)
+        vertex_shader_id = cls.load_vertex_shader(vertex_shader_file)
+        fragment_shader_id = cls.load_fragment_shader(fragment_shader_file)
 
         logging.info("Creating shader program")
         gl.glAttachShader(shader_program, vertex_shader_id)
@@ -59,7 +59,7 @@ class ShaderLoader(object):
         logging.info("Result: %s" % result)
         logging.info("Info: %s" % info)
         if info:
-            exit()
+            raise Exception(info)
 
         gl.glDeleteShader(vertex_shader_id)
         gl.glDeleteShader(fragment_shader_id)
