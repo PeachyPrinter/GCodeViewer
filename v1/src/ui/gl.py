@@ -31,7 +31,6 @@ class GCodeCanvas(glcanvas.GLCanvas):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
-        
 
     def OnEraseBackground(self, event):
         pass # Do nothing, to avoid flashing on MSW.
@@ -44,7 +43,7 @@ class GCodeCanvas(glcanvas.GLCanvas):
         size = self.size = self.GetClientSize()
         self.SetCurrent(self.context)
         glViewport(0, 0, size.width, size.height)
-        
+
     def OnPaint(self, event):
         dc = wx.PaintDC(self)
         self.SetCurrent(self.context)
@@ -152,10 +151,10 @@ class GLProcesser():
         self.currentDisplayList = None
         self.updateRequired = False
         self.layers = []
-        self.movecolour = [1.0,0.0,0.0]
-        self.drawcolour = [0.0,1.0,0.0]
-        self.firstmovecolour = [1.0,0.0,1.0]
-        self.firstdrawcolour = [0.0,0.0,1.0]
+        self.movecolour = [1.0,0.0,0.0]      #Red
+        self.drawcolour = [0.0,0.0,1.0]      #Blue
+        self.firstmovecolour = [1.0,1.0,1.0] #Pink
+        self.firstdrawcolour = [0.0,1.0,0.0] #Green
 
     def get_index(self):
         if not self.currentDisplayList:
@@ -199,6 +198,9 @@ class GLProcesser():
                         glColor3fv(self.firstdrawcolour)
                     else:
                         glColor3fv(self.drawcolour)
+                    glVertex3f(command.start[0] * current_scale,   layer.z * current_scale,                                    command.start[1] * current_scale)
+                    glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale,                                    command.end[1]   * current_scale)
+
                 else:
                     if first_move:
                         first_move = False
@@ -206,11 +208,7 @@ class GLProcesser():
                     else:
                         glColor3fv(self.movecolour)
                     
-                glVertex3f(command.start[0] * current_scale,   layer.z * current_scale,                                    command.start[1] * current_scale)
-                # glVertex3f(command.start[0] * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.start[1] * current_scale)
-                # glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale+layer_height*current_scale * 0.1        , command.end[1]   * current_scale)
-                glVertex3f(command.end[0]   * current_scale,   layer.z * current_scale,                                    command.end[1]   * current_scale)
-
+                
 
         glEnd()
         glEndList()

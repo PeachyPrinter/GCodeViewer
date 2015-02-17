@@ -14,11 +14,11 @@ class DisplayPanel(wx.Panel):
         self.Bind(EVT_UPDATE, self.updateDisplay)
         sizer_display_control = wx.BoxSizer(wx.VERTICAL)
         control_sizer = wx.FlexGridSizer(3, 2, 5, 5)
-        # layer_parse_text = wx.StaticText(self, label="Layers to Hide")
-        # self.skip_slider = wx.Slider(self, value=50, minValue=1, maxValue=200)
+        layer_parse_text = wx.StaticText(self, label="Layers to Hide")
+        self.skip_slider = wx.Slider(self, value=50, minValue=1, maxValue=200)
 
-        # control_sizer.Add(layer_parse_text)
-        # control_sizer.Add(self.skip_slider, 1, wx.EXPAND)
+        control_sizer.Add(layer_parse_text)
+        control_sizer.Add(self.skip_slider, 1, wx.EXPAND)
 
         control_sizer.AddGrowableCol(1, 1)
 
@@ -31,7 +31,7 @@ class DisplayPanel(wx.Panel):
         self.SetSizer(sizer_display_control)
         self.SetFocus()
 
-        # self.Bind(wx.EVT_SLIDER, self.change_layer)
+        self.Bind(wx.EVT_SLIDER, self.change_layer)
 
     def load_file(self, afile):
         self.status = "Loading"
@@ -52,11 +52,11 @@ class DisplayPanel(wx.Panel):
         logging.info('Updating display')
         self.parent.SetStatusText("%s : %s Layers" % (self.status,message.data))
         logging.info('Getting Layers')
-        # self.layer_slider.SetMax(message.data)
-        # self.layers_slider.SetMax(message.data)
-        # self.layer_slider.SetValue(message.data / 2)
-        # self.layers_slider.SetValue(message.data)
-        # self.change_layer(None)
+        self.layer_slider.SetMax(message.data)
+        self.layers_slider.SetMax(message.data)
+        self.layer_slider.SetValue(message.data / 2)
+        self.layers_slider.SetValue(message.data)
+        self.change_layer(None)
         logging.info('Got Layers')
 
     def shutdown(self):
