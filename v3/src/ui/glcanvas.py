@@ -6,6 +6,7 @@ from wx import glcanvas
 import OpenGL.GLUT as glut
 import OpenGL.GL as gl
 from infrastructure.jtgltext import JTGLText
+from infrastructure.jtobjects import JTObjects
 
 
 class GLCanvas(glcanvas.GLCanvas):
@@ -45,7 +46,8 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def DoSetViewport(self):
         size = self.size = self.GetClientSize()
-        self.text.viewPortChanged(size.width, size.height)
+        if self.init:
+            self.text.viewPortChanged(size.width, size.height)
         self.SetCurrent(self.context)
         gl.glViewport(0, 0, size.width, size.height)
 
@@ -85,11 +87,14 @@ class GLCanvas(glcanvas.GLCanvas):
     def InitGL(self):
         size = self.size = self.GetClientSize()
         self.text = JTGLText(os.path.join('resources'), size.width, size.height)
+        self.jtobjects = JTObjects(os.path.join('resources'))
         self.DoSetViewport()
+        self.init = True
 
     def OnDraw(self):
         self.frames += 1
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+        self.jtobjects.draw_grid()
 
         if self.frames % 100 == 0:
             self.fps = 100.0 / (time.time() - self.fps_start)
