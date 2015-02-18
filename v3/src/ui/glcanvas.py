@@ -1,8 +1,11 @@
 import wx
+import os
 import logging
+import time
 from wx import glcanvas
 import OpenGL.GLUT as glut
 import OpenGL.GL as gl
+from infrastructure.jtgltext import JTGLText
 
 
 class GLCanvas(glcanvas.GLCanvas):
@@ -19,6 +22,10 @@ class GLCanvas(glcanvas.GLCanvas):
         self.scale = 0.0
         self.xrot = self.lastrotx = 0.0
         self.yrot = self.lastroty = 0.0
+
+        self.frames = 0
+        self.fps_start = time.time()
+        self.fps = 0.0
 
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.OnEraseBackground)
         self.Bind(wx.EVT_SIZE, self.OnSize)
@@ -38,6 +45,7 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def DoSetViewport(self):
         size = self.size = self.GetClientSize()
+        self.text.viewPortChanged(size.width, size.height)
         self.SetCurrent(self.context)
         gl.glViewport(0, 0, size.width, size.height)
 
@@ -75,66 +83,17 @@ class GLCanvas(glcanvas.GLCanvas):
             self.Refresh(False)
 
     def InitGL(self):
-        # set viewing projection
-        gl.glMatrixMode(gl.GL_PROJECTION)
-        gl.glFrustum(-0.5, 0.5, -0.1, 0.5, 0.5, 8.0)
-
-        # position viewer
-        gl.glMatrixMode(gl.GL_MODELVIEW)
-        gl.glTranslatef(0.0, 0.0, -2.0)
-
-        # position object
-        gl.glRotatef(self.y, 1.0, 0.0, 0.0)
-        gl.glRotatef(self.x, 0.0, 1.0, 0.0)
-
-        gl.glEnable(gl.GL_DEPTH_TEST)
-        # glEnable(GL_LIGHTING)
-        glut.glutInit()
-        # glEnable(GL_LIGHT0)
+        size = self.size = self.GetClientSize()
+        self.text = JTGLText(os.path.join('resources'), size.width, size.height)
         self.DoSetViewport()
 
     def OnDraw(self):
-        # clear color and depth buffers
+        self.frames += 1
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
 
-        # self.processor.updatenow()
-        # index = self.processor.get_index()
-        # if index:
-        #     glCallList(index)
-        glut.glutWireCube(1.0)
-
-        if self.size is None:
-            self.size = self.GetClientSize()
-        w, h = self.size
-        w = max(w, 1.0)
-        h = max(h, 1.0)
-        xScale = 180.0 / w
-        yScale = 180.0 / h
-        logging.debug("X:Y: %s:%s" % (self.xrot, self.yrot))
-
-        # Vertical Rotation Revert
-        gl.glTranslatef(0.0, 0.5, 0.0)
-        gl.glRotatef(0.0 - (self.lastroty * yScale), 1.0, 0.0, 0.0)
-        gl.glTranslatef(0.0, -0.5, 0.0)
-
-        # Horizontal Rotation Revert
-        gl.glRotatef(0.0 - (self.lastrotx * xScale), 0.0, 1.0, 0.0)
-
-        # Scale Revert (Z pos)
-        gl.glTranslatef(0.0, 0.0, 0.0 - self.last_scale)
-
-        # Scale
-        gl.glTranslatef(0.0, 0.0, 0.0 + self.scale)
-
-        # Horizontal Rotation
-        gl.glRotatef(self.xrot * xScale, 0.0, 1.0, 0.0)
-
-        # Vertical Rotation
-        gl.glTranslatef(0.0, 0.5, 0.0)
-        gl.glRotatef(self.yrot * yScale, 1.0, 0.0, 0.0)
-        gl.glTranslatef(0.0, -0.5, 0.0)
-
-        self.last_scale = self.scale
-        self.lastrotx, self.lastroty = self.xrot, self.yrot
+        if self.frames % 100 == 0:
+            self.fps = 100.0 / (time.time() - self.fps_start)
+            self.fps_start = time.time()
+        self.text.printgl('FPS: %s' % self.fps)
 
         self.SwapBuffers()

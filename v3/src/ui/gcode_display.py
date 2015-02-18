@@ -11,13 +11,16 @@ class GcodeDisplayPanel(wx.Panel):
         wx.Panel.__init__(self, self.parent, -1, style=wx.RAISED_BORDER)
         logging.debug("Starting api")
         self.status = ""
+
+        self.skip_slider = wx.Slider(self, value=50, minValue=1, maxValue=200)
+        self.canvas = GLCanvas(self)
+
+        sizer_display_control = wx.BoxSizer(wx.HORIZONTAL)
+        sizer_display_control.Add(self.skip_slider, 1, wx.ALL | wx.EXPAND, 5)
+        sizer_display_control.Add(self.canvas, 4, wx.ALL | wx.EXPAND, 5)
+
         self.UpdateEvent, EVT_UPDATE = wx.lib.newevent.NewEvent()
         self.Bind(EVT_UPDATE, self.updateDisplay)
-        sizer_display_control = wx.BoxSizer(wx.HORIZONTAL)
-        self.skip_slider = wx.Slider(self, value=50, minValue=1, maxValue=200)
-        sizer_display_control.Add(self.skip_slider, 1, wx.ALL | wx.EXPAND, 5)
-        self.canvas = GLCanvas(self)
-        sizer_display_control.Add(self.canvas, 1, wx.ALL | wx.EXPAND, 5)
 
         self.SetAutoLayout(True)
         self.SetSizer(sizer_display_control)
