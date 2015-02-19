@@ -62,7 +62,7 @@ class GCodeViewerApp(wx.App):
         # this can be done with e.g. wxPython input streams:
         file_in_stream = open(openFileDialog.GetPath(), 'r')
 
-        self.window.load_folder(file_in_stream)
+        self.window.load_file(file_in_stream)
 
     def OnExitApp(self, evt):
         self.frame.Close(True)

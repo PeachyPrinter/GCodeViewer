@@ -47,6 +47,7 @@ class GLCanvas(glcanvas.GLCanvas):
         self.Bind(wx.EVT_LEFT_UP, self.OnMouseUp)
         self.Bind(wx.EVT_MOTION, self.OnMouseMotion)
         self.Bind(wx.EVT_MOUSEWHEEL, self.OnMouseWheel)
+        self.Bind(wx.EVT_ENTER_WINDOW, self.OnEntering)
 
     def InitGL(self):
         size = self.size = self.GetClientSize()
@@ -80,11 +81,10 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def get_camera_matrix(self):
         if self.dirty_c or self.camera_matrix is None:
-            # print("Getting movement x,y: %s,%s" % (self.x_rotation, self.y_rotation))
 
             x_pos = self.radius * cos(self.x_rotation) * sin(self.y_rotation)
-            z_pos = self.radius * sin(self.x_rotation) * sin(self.y_rotation)
-            y_pos = self.radius * cos(self.y_rotation)
+            y_pos = self.radius * sin(self.x_rotation) * sin(self.y_rotation)
+            z_pos = self.radius * cos(self.y_rotation)
 
             eye = np.array([x_pos, y_pos, z_pos])
             at = np.array([0.0, 0.0, 0.0])
@@ -97,6 +97,9 @@ class GLCanvas(glcanvas.GLCanvas):
     def OnEraseBackground(self, event):
         # Do nothing, to avoid flashing on MSW.
         pass
+
+    def OnEntering(self, event):
+        self.SetFocus()
 
     def OnSize(self, event):
         wx.CallAfter(self.DoSetViewport)
@@ -129,8 +132,7 @@ class GLCanvas(glcanvas.GLCanvas):
             self.zoom += 0.01
         else:
             self.zoom -= 0.01
-        self.dirty = True
-        logging.info("New Zoom: %s" % self.zoom)
+        self.dirty_p = True
         self.Refresh(False)
 
     def OnMouseMotion(self, evt):

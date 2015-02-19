@@ -36,19 +36,19 @@ class JTObjects(object):
                                     -1.0,    0.0,    -1.0,    1.0,
                                      1.0,    0.0,    -1.0,    1.0,
 
-                                    -1.0,    -1.0,     0.0,    1.0,
-                                     1.0,    -1.0,     0.0,    1.0,
+                                    -1.0,    0.0,     0.0,    1.0,
+                                     1.0,    0.0,     0.0,    1.0,
                                      1.0,     1.0,     0.0,    1.0,
                                      1.0,     1.0,     0.0,    1.0,
                                     -1.0,     1.0,     0.0,    1.0,
-                                    -1.0,    -1.0,     0.0,    1.0,
+                                    -1.0,    0.0,     0.0,    1.0,
 
-                                     0.0,    -1.0,    -1.0,    1.0,
+                                     0.0,    0.0,    -1.0,    1.0,
                                      0.0,     1.0,    -1.0,    1.0,
                                      0.0,     1.0,     1.0,    1.0,
                                      0.0,     1.0,     1.0,    1.0,
-                                     0.0,    -1.0,     1.0,    1.0,
-                                     0.0,    -1.0,    -1.0,    1.0,
+                                     0.0,    0.0,     1.0,    1.0,
+                                     0.0,    0.0,    -1.0,    1.0,
                                     ], dtype=np.float32)
 
         colors = np.array(     [    1.0,    0.0,   0.0,    0.2,
@@ -110,14 +110,14 @@ class JTObjects(object):
         # gl.glBindVertexArray(self.gcode_vao)
         # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.gcode_vbo)
 
-        file_handle = open('yoda.gcode', 'r')
+        file_handle = open('julia.gcode', 'r')
         self.npgcr = NumpyGcodeReader(file_handle)
         self.npgcr.start()
+        self._last_updateTime = 0.0
         self.gcode_done = False
 
-
     def refresh_gcode_object(self,):
-        if not self.gcode_done:
+        if not self.gcode_done and time.time() - self._last_updateTime >= 4.0:
             gl.glBindVertexArray(self.gcode_vao)
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.gcode_vbo)
 
@@ -134,6 +134,7 @@ class JTObjects(object):
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, 0, posisitions)
             gl.glBufferSubData(gl.GL_ARRAY_BUFFER, posisitions.size * 4, colors)
             self.gcode_size = posisitions.size
+            self._last_updateTime = time.time()
 
     def draw_gcode_object(self,):
         self.refresh_gcode_object()

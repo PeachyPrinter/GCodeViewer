@@ -10,6 +10,7 @@ class NumpyGcodeReader(threading.Thread):
         self._lock = threading.Lock()
         self._file_handle = file_handle
         self.commands_processed = 0
+        self.layers = 0
         self.colors = {
             "Draw": [0.0, 1.0, 0.0, 1.0],
             "Move": [1.0, 0.0, 1.0, 1.0],
@@ -35,7 +36,9 @@ class NumpyGcodeReader(threading.Thread):
             with self._lock:
                 if self._running is True:
                     self._run_loop()
-
+        self._file_handle.close()
+        print("Layers: %s" % self.layers)
+        print("Commands: %s" % self.commands_processed)
         if self.state is not "Complete":
             self.state = "Aborted"
 
@@ -65,9 +68,10 @@ class NumpyGcodeReader(threading.Thread):
                 if detail[0] == 'X':
                     next_move[0] = float(detail[1:])
                 elif detail[0] == 'Y':
-                    next_move[1] = float(detail[1:])
-                elif detail[0] == 'Z':
                     next_move[2] = float(detail[1:])
+                elif detail[0] == 'Z':
+                    self.layers += 1
+                    next_move[1] = float(detail[1:])
                 elif detail[0] == 'E':
                     if float(detail[1:]) > 0.0:
                         next_color = self.colors['Draw']
