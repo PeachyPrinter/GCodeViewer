@@ -4,6 +4,7 @@ import logging
 import time
 from wx import glcanvas
 import numpy as np
+from math import sin, cos, pi
 import OpenGL.GL as gl
 
 from infrastructure import jtutil
@@ -18,14 +19,17 @@ class GLCanvas(glcanvas.GLCanvas):
         self.init = False
         self.context = glcanvas.GLContext(self)
         # initial mouse position
-        self.lastx = self.x = 0
-        self.lasty = self.y = 0
+        
         self.size = None
         self.last_scale = 0.0
         self.scale = 0.0
         self.zoom = 1.0
-        self.xrot = self.lastrotx = 0.0
-        self.yrot = self.lastroty = 0.0
+        self.radius = 3.0
+
+        self.x_mouse = 0.0
+        self.y_mouse = 0.0
+        self.x_rotation = 0.0
+        self.y_rotation = 0.0
 
         self.frames = 0
         self.fps_start = time.time()
@@ -76,9 +80,14 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def get_camera_matrix(self):
         if self.dirty_c or self.camera_matrix is None:
-            print("Getting movement x,y: %s,%s" % (self.xrot, -self.yrot))
+            # print("Getting movement x,y: %s,%s" % (self.x_rotation, self.y_rotation))
 
-            eye = np.array([self.xrot / 10.0, self.yrot / -10.0, -3.0])
+            x_pos = self.radius * cos(self.x_rotation) * sin(self.y_rotation) 
+            z_pos = self.radius * sin(self.x_rotation) * sin(self.y_rotation) 
+            y_pos = self.radius * cos(self.y_rotation) 
+            print("Getting posisitrion x,y,z: %2.2f, %2.2f, %2.2f" % (x_pos, y_pos, z_pos))
+
+            eye = np.array([x_pos, y_pos, z_pos])
             at = np.array([0.0, 0.0, 0.0])
             up = np.array([0.0, 1.0, 0.0])
 
@@ -87,7 +96,7 @@ class GLCanvas(glcanvas.GLCanvas):
             # self.camera_matrix = np.matrix([[1.0,    0.0,    0.0,   0],
             #                                 [0.0,    1.0,    0.0,   0],
             #                                 [0.0,    0.0,    1.0,    0],
-            #                                 [self.xrot / 10.0,    self.yrot / -10.0,    -3.0,     1.0]], dtype=np.float32)
+            #                                 [self.x_rotation / 10.0,    self.y_rotation / -10.0,    -3.0,     1.0]], dtype=np.float32)
             self.dirty_c = False
         return self.camera_matrix
 
@@ -116,7 +125,7 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def OnMouseDown(self, evt):
         self.CaptureMouse()
-        self.x, self.y = evt.GetPosition()
+        self.x_mouse, self.y_mouse = evt.GetPosition()
 
     def OnMouseUp(self, evt):
         self.ReleaseMouse()
@@ -132,14 +141,10 @@ class GLCanvas(glcanvas.GLCanvas):
 
     def OnMouseMotion(self, evt):
         if evt.Dragging() and evt.LeftIsDown():
-            self.lastx, self.lasty = self.x, self.y
-            self.x = evt.GetPosition()[0]
-            self.y = evt.GetPosition()[1]
-            logging.debug('Diff X:Y:  %s:%s ' % (self.x - self.lastx, self.y - self.lasty))
-            self.xrot += self.x - self.lastx
-            self.yrot += self.y - self.lasty
+            self.x_rotation += float(evt.GetPosition()[0] - self.x_mouse) / float(self.size.width)
+            self.y_rotation += float(evt.GetPosition()[1] - self.y_mouse) / float(self.size.height)
+            self.x_mouse, self.y_mouse = evt.GetPosition()
             self.dirty_c = True
-            self.dirty_p = True
             self.Refresh(False)
 
     def OnDraw(self):
