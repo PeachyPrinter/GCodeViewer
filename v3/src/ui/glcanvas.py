@@ -72,9 +72,9 @@ class GLCanvas(glcanvas.GLCanvas):
             tra_z = -(far + near) / (far - near)
 
             self.projection_matrix = np.swapaxes(np.matrix([[fov_x,    0.0,    tra_x,      0.0],
-                                                [0.0,    fov_y,    tra_y,      0.0],
-                                                [0.0,      0.0,    tra_z,    fov_z],
-                                                [0.0,      0.0,     -1.0,      0.0]], dtype=np.float32),0,1)
+                                                            [0.0,    fov_y,    tra_y,      0.0],
+                                                            [0.0,      0.0,    tra_z,    fov_z],
+                                                            [0.0,      0.0,     -1.0,      0.0]], dtype=np.float32),0,1)
             self.dirty_p = False
         return self.projection_matrix
 
@@ -82,21 +82,15 @@ class GLCanvas(glcanvas.GLCanvas):
         if self.dirty_c or self.camera_matrix is None:
             # print("Getting movement x,y: %s,%s" % (self.x_rotation, self.y_rotation))
 
-            x_pos = self.radius * cos(self.x_rotation) * sin(self.y_rotation) 
-            z_pos = self.radius * sin(self.x_rotation) * sin(self.y_rotation) 
-            y_pos = self.radius * cos(self.y_rotation) 
-            print("Getting posisitrion x,y,z: %2.2f, %2.2f, %2.2f" % (x_pos, y_pos, z_pos))
+            x_pos = self.radius * cos(self.x_rotation) * sin(self.y_rotation)
+            z_pos = self.radius * sin(self.x_rotation) * sin(self.y_rotation)
+            y_pos = self.radius * cos(self.y_rotation)
 
             eye = np.array([x_pos, y_pos, z_pos])
             at = np.array([0.0, 0.0, 0.0])
             up = np.array([0.0, 1.0, 0.0])
 
             self.camera_matrix = jtutil.getLookAtMatrix(eye, at, up)
-
-            # self.camera_matrix = np.matrix([[1.0,    0.0,    0.0,   0],
-            #                                 [0.0,    1.0,    0.0,   0],
-            #                                 [0.0,    0.0,    1.0,    0],
-            #                                 [self.x_rotation / 10.0,    self.y_rotation / -10.0,    -3.0,     1.0]], dtype=np.float32)
             self.dirty_c = False
         return self.camera_matrix
 
@@ -151,6 +145,7 @@ class GLCanvas(glcanvas.GLCanvas):
         self.frames += 1
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         self.jtobjects.draw_grid()
+        self.jtobjects.draw_gcode_object()
 
         if self.frames % 100 == 0:
             self.fps = 100.0 / (time.time() - self.fps_start)

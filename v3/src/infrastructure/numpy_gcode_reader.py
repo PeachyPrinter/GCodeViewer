@@ -9,6 +9,7 @@ class NumpyGcodeReader(threading.Thread):
         self._running = True
         self._lock = threading.Lock()
         self._file_handle = file_handle
+        self.commands_processed = 0
         self.colors = {
             "Draw": [0.0, 1.0, 0.0, 1.0],
             "Move": [1.0, 0.0, 1.0, 1.0],
@@ -21,7 +22,7 @@ class NumpyGcodeReader(threading.Thread):
         self._line_colors = []
 
     def get_current(self):
-        return {"State": self.state, "Points": self._line_segments, "Colors": self._line_colors}
+        return (self.state, self._line_segments, self._line_colors)
 
     def start(self):
         self.state = "Starting"
@@ -53,6 +54,7 @@ class NumpyGcodeReader(threading.Thread):
             self._running = False
 
     def _process_command(self, command):
+        self.commands_processed +=1
         details = command.split(' ')
         if details[0] in ["G0", "G00", "G1", "G01"]:
             
