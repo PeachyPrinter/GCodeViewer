@@ -7,9 +7,10 @@ from shader_loader import ShaderLoader
 
 
 class JTObjects(object):
-    def __init__(self, resource_path):
+    def __init__(self, resource_path, projection_matrix_function, camera_matrix_function):
         self.resource_path = resource_path
-        self.projection_matrix = None
+        self.projection_matrix_function = projection_matrix_function
+        self.camera_matrix_function = camera_matrix_function
         self.load_shader_programs()
         self.init_grid()
 
@@ -24,7 +25,8 @@ class JTObjects(object):
         gl.glBindVertexArray(self.grid_vao)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.grid_vbo)
 
-        posisitions = np.array([     1.0,    0.0,    -1.0,    1.0,
+        posisitions = np.array([
+                                     1.0,    0.0,    -1.0,    1.0,
                                      1.0,    0.0,     1.0,    1.0,
                                     -1.0,    0.0,     1.0,    1.0,
                                     -1.0,    0.0,     1.0,    1.0,
@@ -73,31 +75,6 @@ class JTObjects(object):
         gl.glBufferSubData(gl.GL_ARRAY_BUFFER, posisitions.size * 4, colors)
         self.grid_size = posisitions.size
 
-    def get_projection_matrix(self,):
-        if self.projection_matrix is not None:
-            return self.projection_matrix
-
-        near = 1.0
-        far = 10.0
-        left = -1.0
-        right = 1.0
-        top = 1.0
-        bottom = -1.0
-
-        fov_x = (2 * near) / (right - left)
-        fov_y = (2 * near) / (top - bottom)
-        fov_z = (-2 * far * near)/(far - near)
-
-        tra_x = (right + left)/(right - left)
-        tra_y = (top + bottom)/(top - bottom)
-        tra_z = -(far + near) / (far - near)
-
-        self.projection_matrix =  np.array([    fov_x,    0.0,    tra_x,      0.0,
-                                                0.0,    fov_y,    tra_y,      0.0,
-                                                0.0,      0.0,    tra_z,    fov_z,
-                                                0.0,      0.0,     -1.0,      0.0     ], dtype=np.float32)
-        return self.projection_matrix
-
     def draw_grid(self,):
         gl.glUseProgram(self.simple_object_shader)
         gl.glEnable(gl.GL_BLEND)
@@ -111,10 +88,10 @@ class JTObjects(object):
         vProjection = gl.glGetUniformLocation(self.simple_object_shader, 'vProjection')
         vPosisition = gl.glGetAttribLocation(self.simple_object_shader, "vPosisition")
         vColor = gl.glGetAttribLocation(self.simple_object_shader, "vColor")
-        vTranslate = gl.glGetUniformLocation(self.simple_object_shader, 'vTranslate')
+        vCamera = gl.glGetUniformLocation(self.simple_object_shader, 'vCamera')
 
-        gl.glUniformMatrix4fv(vProjection, 1, gl.GL_FALSE, self.get_projection_matrix())
-        gl.glUniform4fv(vTranslate, 1, [0.1, -1.0, -3.0, 0.0])
+        gl.glUniformMatrix4fv(vProjection, 1, gl.GL_FALSE, self.projection_matrix_function())
+        gl.glUniformMatrix4fv(vCamera, 1, gl.GL_FALSE, self.camera_matrix_function())
 
         gl.glEnableVertexAttribArray(vPosisition)
         gl.glEnableVertexAttribArray(vColor)
@@ -124,4 +101,3 @@ class JTObjects(object):
 
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, self.grid_size / 4)
 
-        gl.glDisable(gl.GL_BLEND)
